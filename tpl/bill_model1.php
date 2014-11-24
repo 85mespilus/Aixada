@@ -99,6 +99,9 @@
 					$('#total_iva').text(totals['totalIva']+ "<?=$Text['currency_sign'];?>");
 					$('#total_revTax').text(totals['totalRevTax']+ "<?=$Text['currency_sign'];?>");
 					$('#import_net').text(totals['total_net']+ "<?=$Text['currency_sign'];?>");
+					$('#import_iva1').text(totals['Fact_Iva1']+ "<?=$Text['currency_sign'];?>");
+					$('#import_iva2').text(totals['Fact_Iva2']+ "<?=$Text['currency_sign'];?>");
+					$('#import_iva3').text(totals['Fact_Iva3']+ "<?=$Text['currency_sign'];?>");
 
 					if (asPDF) {
 						var pathToImg = $('#coopLogo').attr('src');
@@ -133,11 +136,11 @@
 			<img id="coopLogo" alt="coop logo" src="../img/tpl_header_logo.png" width="500" height="180"/>
 		</div>
 		<div id="address">
-			<h2 class="txtAlignRight">COOPERATIVA NAME</h2>
-			<h2 class="txtAlignRight">CIF/NIF: F650000</h2>
-			<p class="txtAlignRight">Street<br/>
-			Zip City<br/>
-			email@bla.com
+			<h2 class="txtAlignRight">COOPERATIVA MESPILUS</h2>
+			<h2 class="txtAlignRight">CIF/NIF: F64965501</h2>
+			<p class="txtAlignRight">c/ Venero, 12<br/>
+			08005 BARCELONA<br/>
+			www.mespilus.org
 			</p>
 		</div>
 	</div>
@@ -235,6 +238,27 @@
 					<td class="revTaxCol"></td>
 					<td colspan="4" class="txtAlignRight"><?php echo $Text['incl_revtax']; ?></td>
 					<td id="total_revTax" class="txtAlignRight"></td>
+				</tr>
+				<tr>
+					<td></td>
+					<td></td>
+					<td class="revTaxCol"></td>
+					<td colspan="4" class="txtAlignRight bold"><?php echo $Text['incl_fiva1']; ?></td>
+					<td id="import_iva1" class="txtAlignRight bold"></td>
+				</tr>
+				<tr>
+					<td></td>
+					<td></td>
+					<td class="revTaxCol"></td>
+					<td colspan="4" class="txtAlignRight bold"><?php echo $Text['incl_fiva2']; ?></td>
+					<td id="import_iva2" class="txtAlignRight bold"></td>
+				</tr>
+				<tr>
+					<td></td>
+					<td></td>
+					<td class="revTaxCol"></td>
+					<td colspan="4" class="txtAlignRight bold"><?php echo $Text['incl_fiva3']; ?></td>
+					<td id="import_iva3" class="txtAlignRight bold"></td>
 				</tr>
 				<tr>
 					<td></td>

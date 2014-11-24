@@ -588,8 +588,11 @@ $Text['purchase_details'] = "Detall de la compra de la cistella nº";
 $Text['filter_uf'] = "Filtra per UF";
 $Text['purchase_uf'] = "Compra de la UF";
 $Text['quantity_short'] = "Qu";
-$Text['incl_iva'] = "incl. IVA";
-$Text['incl_revtax'] = "incl. ImpRev";
+$Text['incl_iva'] = "IVA";
+$Text['incl_revtax'] = "Marge coop.";
+$Text['incl_fiva1'] = "A Facturar (IVA 4%)"; //Reports amb Import a Facturar segons IVA
+$Text['incl_fiva2'] = "A Facturar (IVA 10%)";
+$Text['incl_fiva3'] = "A Facturar (IVA 21%)";
 $Text['no_news_today'] = "Cap notícia és la millor notícia: avui no hi ha hagut incidents!";
 $Text['nav_mng_iva'] = "tipus d'IVA";
 $Text['nav_mng_money'] = "Diners";
@@ -745,7 +748,7 @@ $Text['cif_nif'] = "CIF/NIF"; //CIF/NIF
 $Text['bill_product_name'] = "Article"; //concepte en cat... 
 $Text['bill_total'] = "Total"; //Total factura 
 $Text['phone_pl'] = "Telèfons";
-$Text['net_amount'] = "Import net"; //importe netto 
+$Text['net_amount'] = "Total s/IVA s/Marge"; //importe netto 
 $Text['gross_amount'] = "Import brut"; //importe brutto
 $Text['add_pagebreak'] = "Prem aquí per a afegir un salt de pàgina";
 $Text['remove_pagebreak'] = "Prem aquí per eliminar el salt de pàgina";
@@ -853,7 +856,7 @@ $Text['add_stock_frase'] = "Estoc total = estoc actual de "; //complete frase is
 $Text['correct_stock_frase'] = "L'estoc actual no és de";
 $Text['stock_but'] = "sinó"; //current stock is not x units but...
 $Text['stock_info'] = "Nota: es poden consultar tots els canvis d'estoc (addicions, correccions, pèrdues) fent clic al nom del producte aquí baix.";
-$Text['stock_info_product'] = "Nota: es poden consultar tots els canvis d'estoc (addicions, correccions, pèrdues totals) des de la secció Gestiona&gt; Productes&gt; Estoc.";
+$Text['stock_info_product'] = "Nota: es poden consultar tots els canvis d'estoc (addicions, correccions, pèrdues totals) des de la secció Informes &gt; Estoc.";
 
 
 $Text['msg_confirm_prov'] = "Estàs segur que vols exportar tots els proveïdors?"; 
@@ -903,6 +906,12 @@ $Text['msg_err_oldPwdWrong'] = "Sorry, but you got your old password wrong. Plea
 $Text['msg_err_adminStuff'] = "Insufficient access priviledges. Only Admin can do that!";
 $Text['msg_err_deactivate_prdrow'] = "This product cannot be deactivated because it has ordered items for certain dates. Deactivate the product for those individual dates first!";
 $Text['msg_err_deactivate_ir'] = "You cannot deactivate several dates for this product since certain dates contain already ordered items. Either turn off Instant Repeat or deactivate the ordered products/date individually.";
-
+$Text['msg_err_deactivate_product'] = "There are open orders for this product. Deactivating it will remove these items from the corresponding order carts. Deleting order items cannot be undone.";
+$Text['msg_activate_prod_ok'] = "The product has been activated successfuly."; 
+$Text['msg_deactivate_prod_ok'] = "The product has been deactivated successfuly."; 
+$Text['msg_activate_prov_ok'] = "The provider has been activated successfuly."; 
+$Text['msg_deactivate_prov_ok'] = "The provider has been deactivated successfuly."; 
+$Text['no_stock'] = "Out of stock!!";
+$Text['stock_mov_type'] = "Movement type";
 
 ?>

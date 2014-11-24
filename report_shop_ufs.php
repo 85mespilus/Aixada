@@ -171,6 +171,10 @@
 					$('#total_iva').text(totals['totalIva']);
 					$('#total_revTax').text(totals['totalRevTax']);
 					
+					$('#fact_Iva1').text(totals['Fact_Iva1']);
+					$('#fact_Iva2').text(totals['Fact_Iva2']);
+					$('#fact_Iva3').text(totals['Fact_Iva3']);
+					
 					$('tr:even', this).addClass('rowHighlight');
 					$("#tbl_Shop").trigger("update"); 
 					$('.loadSpinner').hide();
@@ -493,6 +497,22 @@
 							<td id="total_revTax"></td>
 						</tr>
 
+						<tr>
+						
+							<td colspan="7" class="boldStuff"><?php echo $Text['incl_fiva1']; ?></td>
+							<td id="fact_Iva1" class="boldStuff dblBorderTop"></td>
+						</tr>
+						<tr>
+						
+							<td colspan="7" class="boldStuff"><?php echo $Text['incl_fiva2']; ?></td>
+							<td id="fact_Iva2" class="boldStuff"></td>
+						</tr>
+						<tr>
+						
+							<td colspan="7" class="boldStuff"><?php echo $Text['incl_fiva3']; ?></td>
+							<td id="fact_Iva3" class="boldStuff dblBorderBottom"></td>
+						</tr>
+						
 						<tr>
 							<td colspan="8"><p>&nbsp;</p></td>
 						</tr>

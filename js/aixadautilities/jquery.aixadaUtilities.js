@@ -10,6 +10,9 @@ $(function(){
 			sumItems : function(sel){
 				var sums = [];
 				var total = 0; 
+				var FactIva1 = 0;
+				var FactIva2 = 0;
+				var FactIva3 = 0;
 				var totalIva = 0; 
 				var totalRevTax = 0; 
 				var totalNet = 0; 
@@ -21,8 +24,12 @@ $(function(){
 					
 					total += price; 
 					totalNet += net;
+					
+					if (iva == 4) FactIva1 += net * (1 + rev/100);
+					if (iva == 10) FactIva2 += net * (1 + rev/100);
+					if (iva == 21) FactIva3 += net * (1 + rev/100);
 						
-					totalIva += net * (iva/100);
+					totalIva += net * (1+rev/100) * (iva/100);
 					totalRevTax += net * (rev/100); 
 										
 				});
@@ -31,6 +38,9 @@ $(function(){
 				sums['totalIva'] = totalIva.toFixed(2); 
 				sums['totalRevTax'] = totalRevTax.toFixed(2); 
 				sums['total_net'] = totalNet.toFixed(2);
+				sums['Fact_Iva1'] = FactIva1.toFixed(2);
+				sums['Fact_Iva2'] = FactIva2.toFixed(2);
+				sums['Fact_Iva3'] = FactIva3.toFixed(2);
 				return sums; 
 			},		
 			sumSimpleItems : function (sel){

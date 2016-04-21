@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>Help</title>
+<title>Ajuda</title>
 <style>
 	div#stageWrap {width:80%; margin:10px auto;}
 	body {font-family:Arial;}
@@ -11,31 +11,23 @@
 </head>
 <body>
 <div id="stageWrap">
-<h1>FAQ</h1>
-<a name="top"></a>
-<ol>
-	<li><a href="#printOrder">Cómo imprimir un pedido</a></li>
-	<li><a href="#anyOtherTheme">any other topic...</a></li>
-</ol>
+<h1>Ajuda de l'aplicació</h1>
+
 
 
 <a name="printOrder"></a>
 <div class="faq-item">
-<h2>How to print an order</h2>
-<p>Explanation starts there ...</p>
+<h2>Manual en format PDF (1a versió)</h2>
+<p>Podeu accedir al manual de l'aplicació en format PDF en aquest enllaç: <a href="./mespi.pdf" target="_blank">Manual de l'aplicació (PDF)</a></p>
 
 
-<a href="#top">Back to top</a>
+
 </div>
 
 
 <a name="anyOtherTheme"></a>
 <div class="faq-item">
-<h2>Any other title</h2>
-<p>Explanation starts there ...</p>
 
-
-<a href="#top">Back to top</a>
 </div>
 
 

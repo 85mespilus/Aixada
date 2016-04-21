@@ -11,18 +11,13 @@
   	<link rel="stylesheet" type="text/css"   media="screen" href="js/fgmenu/fg.menu.css"   />
     <link rel="stylesheet" type="text/css"   media="screen" href="css/ui-themes/<?=$default_theme;?>/jqueryui.css"/>
 
-
-	<?php if (isset($_SESSION['dev']) && $_SESSION['dev'] == true ) { ?>
-	    <script type="text/javascript" src="js/jquery/jquery.js"></script>
-		<script type="text/javascript" src="js/jqueryui/jqueryui.js"></script>
-		<script type="text/javascript" src="js/fgmenu/fg.menu.js"></script>
-		<script type="text/javascript" src="js/aixadautilities/jquery.aixadaMenu.js"></script>
-	   	<script type="text/javascript" src="js/aixadautilities/jquery.aixadaXML2HTML.js" ></script>
-	   	<script type="text/javascript" src="js/aixadautilities/jquery.aixadaUtilities.js" ></script>
-	   	<script type="text/javascript" src="js/aixadacart/jquery.aixadacart.js" ></script>
-   	<?php  } else { ?>
-	   	<script type="text/javascript" src="js/js_for_shop_and_order.min.js"></script>
-    <?php }?>
+    <script type="text/javascript" src="js/jquery/jquery.js"></script>
+    <script type="text/javascript" src="js/jqueryui/jqueryui.js"></script>
+    <script type="text/javascript" src="js/fgmenu/fg.menu.js"></script>
+    <script type="text/javascript" src="js/aixadautilities/jquery.aixadaMenu.js"></script>
+    <script type="text/javascript" src="js/aixadautilities/jquery.aixadaXML2HTML.js" ></script>
+    <script type="text/javascript" src="js/aixadautilities/jquery.aixadaUtilities.js" ></script>
+    <script type="text/javascript" src="js/aixadacart/jquery.aixadacart.js" ></script>
 
  	<script type="text/javascript" src="js/jqueryui/i18n/jquery.ui.datepicker-<?=$language;?>.js" ></script>
  	<script type="text/javascript" src="js/aixadacart/i18n/cart.locale-<?=$language;?>.js" ></script>
@@ -31,11 +26,13 @@
 	<script type="text/javascript">
 
 	$(function(){
-
-
+		$.ajaxSetup({ cache: false });
 
 	//decide what to do in which section
 	var what = $.getUrlVar('what');
+
+	//allow pruchase of stock_actual < 0 items? 
+	var preventOutofStock = <?php echo configuration_vars::get_instance()->prevent_out_of_stock_purchase;?>
 
 
 	//detect form submit and prevent page navigation; we use ajax.
@@ -47,6 +44,8 @@
 	});
 
 	$("#tabs").tabs();
+	
+	//$("#tpv").focus();
 
 	//layer inform that provider has passed closing date for order
 	var counterClosed = 0;
@@ -103,6 +102,7 @@
 	$('#product_list_provider tbody').xml2html("init");
 	$('#product_list_category tbody').xml2html("init");
 	$('#product_list_search tbody').xml2html("init");
+	$('#product_list_tpv tbody').xml2html("init");
 	$('#product_list_preorder tbody').xml2html("init",{
 			url: 'php/ctrl/ShopAndOrder.php',
 			params : 'oper=getPreorderableProducts',
@@ -204,16 +204,46 @@
 	}); //end autocomplete
 
 
+	/**
+	 *	product TPV functionality - Point of Sale Barcode search function
+	 */
+	$("#tpv").keyup(function(e){
+				var minLength = 12; 						//search barcode with min of X characters
+				var searchStr = $("#tpv").val();
+
+				if (searchStr.length >= minLength){
+					$('.loadSpinner').show();
+				  	$('#product_list_tpv tbody').xml2html("reload",{
+						params: 'oper=get'+what+'Products&provider_id=-2&date='+$.getSelectedDate('#datepicker','',what)+'&like='+searchStr,
+						rowComplete : function(rowIndex, row){	//updates quantities for items already in cart
+							formatRow(row);
+						},
+						complete : function(rowCount){
+							$('.loadSpinner').hide();
+						}
+					});
+				} else {
+					$('#product_list_tpv tbody').xml2html("removeAll");				//delete all product entries in the table if we are below minLength;
+
+				}
+		e.preventDefault();						//prevent default event propagation. once the list is build, just stop here.
+	}); //end autocomplete
+	
+	$("#tpv").mouseup(function(e){
+				$("#tpv").val('');
+				$('#product_list_tpv tbody').xml2html("removeAll");		//delete all product entries in the table if  we click barcode input box;		
+		e.preventDefault();						//prevent default event propagation. once the list is build, just stop here.
+	}); //end autocomplete
 
 	//dates available to make orders; start with dummy date
 	var availableDates = ["2011-00-00"];
 
-
+	
 	$("#datepicker").datepicker({
 				dateFormat 	: 'DD d M, yy',
 				showAnim	: '',
 				beforeShowDay: function(date){		//activate only those dates that are available for ordering.
-					if (what == 'Order'){
+					if (what == 'Order'||what == 'Shop'){
 						var ymd = $.datepicker.formatDate('yy-mm-dd', date);
 						if ($.inArray(ymd, availableDates) == -1) {
 						    return [false,"","Unavailable"];
@@ -235,16 +265,8 @@
    	 *	init the datepicker
    	 */
 	if (what == "Shop") {
-		$('#tabs ul').children('li:gt(2)').hide(); 			//preorder tab is only available for ordering
+		$('#tabs ul').children('li:gt(3)').hide(); 			//preorder tab is only available for ordering
 		$("#datepicker").hide();							//hide date input field for shop
-
-		$.getAixadaDates('getToday', function (date){
-			$("#datepicker").datepicker('setDate', $.datepicker.parseDate('yy-mm-dd', date[0]));
-			$("#datepicker").datepicker("refresh");
-			refreshSelects(date[0]);
-		});
-
-	} else {
 
 		$.getAixadaDates('getAllOrderableDates', function (dates){
 			//if no dates are available, products have to be activated first!!
@@ -260,9 +282,26 @@
 			$("#datepicker").datepicker("refresh");
 			refreshSelects(dates[0]);
 		});
+		
+	} else {
+
+		$('#tabs ul').children('li:eq(1)').hide(); 			//tpv barcode tab is only available for shop
+		$.getAixadaDates('getAllOrderableDates', function (dates){
+			//if no dates are available, products have to be activated first!!
+			if (dates.length == 0){
+				$.showMsg({
+					msg:"<?php echo $Text['msg_no_active_products'];?>",
+					type: 'error'});
+				return false;
+			}
+
+			availableDates = dates;
+			$("#datepicker").datepicker('setDate', $.datepicker.parseDate('yy-mm-dd', availableDates[0]));
+			$("#datepicker").datepicker("refresh");
+			refreshSelects(dates[0]);
+		});
 	}
-
-
+	
 	/**
 	 *  show hide item list, cart or both
 	*/
@@ -334,7 +373,7 @@
 			var qu = $(this).val();													//don't add nonsense values
 			$(this).val(parseFloat(qu.replace(",",".")));
 
-			if (isNaN($(this).val())) {
+			if (isNaN($(this).val())||$(this).val()>999) {
 				var $this = $(this);
 				$(this).addClass("ui-state-error");
 				$(this).effect('pulsate',{},100, function callback(){
@@ -389,7 +428,7 @@
 		})
 
 		$("#categorySelect").xml2html("reload", {
-			params : 'oper=get'+what+'Categories&date='+dateText,
+			params : 'oper=get'+what+'Categories&date='+dateText
 		})
 
 		$('#product_list_provider tbody').xml2html("removeAll");
@@ -421,6 +460,25 @@
 			counterClosed++;
 		}
 
+		var stockActual = $(row).attr("stock");
+		var orderType	= $(row).attr("ordertype");
+
+		//highlight stock product without any stock left
+		if (orderType == 1 && stockActual <=0){
+			$('td', row).addClass('ui-state-highlight');
+		}
+		
+		
+		//this is a stock product without any stock left: can't be bought. 
+		if (preventOutofStock == true && orderType == 1 && stockActual <=0){
+			$(row).addClass('dim60');
+			$('td', row).addClass('ui-state-highlight');
+			$('input', row).attr('disabled','disabled');
+			$('td:eq(1)', row).empty().append("<?php echo $Text['no_stock']; ?>")
+		}
+
+
+
 	}
 
 
@@ -437,6 +495,7 @@
 	$('#leftCol .loadSpinner').hide();
 
 	});  //close document ready
+		
 </script>
 
 </head>
@@ -457,9 +516,9 @@
 		    					echo $Text['ti_order'];
 		    				} else if ($_REQUEST['what'] == 'Shop') {
 		    					echo $Text['ti_shop'];
-		    					printf('<sup class="toggleShopDate" title="%s">(*)</sup>',$Text['show_date_field']);
+		    					printf('<sup class="toggleShopDate" title="%s"></sup>',$Text['show_date_field']);
 		    				}?>
-		    	&nbsp; <input  type="text" class="datePickerInput ui-widget-content ui-corner-all" id="datepicker" title="Click to edit"></h1>
+		    	&nbsp; <input  type="text" class="datePickerInput ui-widget-contentyellow ui-corner-all" id="datepicker" title="Click to edit"></h1>
     		</div>
     		<div id="titleRightCol">
     			<div id="ViewChoice">
@@ -474,11 +533,14 @@
 		<div id="tabs">
 			<ul>
 				<li><a href="#tabs-1"><?php echo $Text['by_provider']; ?></a></li>
-				<li><a href="#tabs-2"><?php echo $Text['by_category']; ?></a></li>
-				<li><a href="#tabs-3"><?php echo $Text['search']; ?></a></li>
-				<li><a href="#tabs-4"><?php echo $Text['special_offer']; ?></a></li>
+				<li><a href="#tabs-2"><?php echo $Text['tpv']; ?></a></li>
+				<li><a href="#tabs-3"><?php echo $Text['by_category']; ?></a></li>
+				<li><a href="#tabs-4"><?php echo $Text['search']; ?></a></li>
+				<li><a href="#tabs-5"><?php echo $Text['special_offer']; ?></a></li>
 			</ul>
 			<span style="float:right; margin-top:-40px; margin-right:5px;"><img class="loadSpinner" src="img/ajax-loader.gif"/></span>
+			
+		
 			<div id="tabs-1">
 				<div class="wrapSelect">
 					<select id="providerSelect" class="longSelect">
@@ -502,12 +564,12 @@
 							</tr>
 						</thead>
 						<tbody>
-							<tr id="{id}" closingdate="{time_left}">
+							<tr id="{id}" closingdate="{time_left}" stock="{stock_actual}" ordertype="{orderable_type_id}">
 								<td class="item_it">{id}</td>
 								<td class="item_info"><p class="ui-corner-all iconContainer textAlignCenter rowProductInfo" stock="{stock_actual}" iva_percent="{iva_percent}" rev_tax_percent="{rev_tax_percent}" description="{description}"><span class="ui-icon ui-icon-info"></span></p></td>
 								<td class="item_name">{name}</td>
 								<td class="item_provider_name hidden">{provider_name}</td>
-								<td class="item_quantity"><input  class="ui-corner-all" name="{id}" value="0.00" size="4" id="quantity_{id}"/></td>
+								<td class="item_quantity"><input  class="ui-corner-all quantity_{id}" name="{id}" value="0.00" size="4" id="quantity_{id}"/></td>
 								<td class="item_unit">{unit}</td>
 								<td class="item_rev_tax_percent hidden">{rev_tax_percent}</td>
 								<td class="item_price">{unit_price}</td>
@@ -517,7 +579,46 @@
 					</table>
 				</div>
 			</div>
+			
 			<div id="tabs-2">
+				<div class="ui-widget">
+                                 <label for="tpv"><?php echo $Text['tpv'];?></label>
+						<input id="tpv" value="" class="ui-widget-contentyellow ui-corner-all"/>
+				</div>
+				<p>&nbsp;</p>
+				<div class="product_list_wrap">
+					<table id="product_list_tpv" class="product_list" >
+						<thead>
+						<tr>
+							<th><?php echo $Text['id'];?></th>
+							<th><?php echo $Text['info'];?></th>
+							<th><?php echo $Text['name_item'];?></th>
+							<th><?php echo $Text['provider_name'];?></th>
+							<th><?php echo $Text['quantity'];?></th>
+							<th><?php echo $Text['unit'];?></th>
+							<!-- th><?php echo $Text['revtax_abbrev'];?></th-->
+							<th><?php echo $Text['price'];?></th>
+						</tr>
+						</thead>
+						<tbody>
+							<tr id="{id}" closingdate="{time_left}" stock="{stock_actual}" ordertype="{orderable_type_id}">
+								<td class="item_it">{id}</td>
+								<td class="item_info"><p class="ui-corner-all iconContainer textAlignCenter rowProductInfo" stock="{stock_actual}" iva_percent="{iva_percent}" rev_tax_percent="{rev_tax_percent}" description="{description}"><span class="ui-icon ui-icon-info"></span></p></td>
+								<td class="item_name">{name}</td>
+								<td class="item_provider_name">{provider_name}</td>
+								<td class="item_quantity"><input  class="ui-corner-all quantity_{id}" name="{id}" value="0.00" size="4" id="quantity_{id}"/></td>
+								<td class="item_unit">{unit}</td>
+								<td class="item_rev_tax_percent hidden">{rev_tax_percent}</td>
+								<td class="item_price">{unit_price}</td>
+								<td class="item_iva_percent hidden">{iva_percent}</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<br><?php echo $Text['msg_remember_stock'];?>
+			</div>
+			
+			<div id="tabs-3">
 			 <div class="wrapSelect">
 					<label for="categorySelect"></label>
 					<select id="categorySelect" class="longSelect">
@@ -540,12 +641,12 @@
 						</tr>
 						</thead>
 						<tbody>
-							<tr id="{id}" closingdate="{time_left}">
+							<tr id="{id}" closingdate="{time_left}" stock="{stock_actual}" ordertype="{orderable_type_id}">
 								<td class="item_it">{id}</td>
 								<td class="item_info"><p class="ui-corner-all iconContainer textAlignCenter rowProductInfo" stock="{stock_actual}" iva_percent="{iva_percent}" rev_tax_percent="{rev_tax_percent}" description="{description}"><span class="ui-icon ui-icon-info"></span></p></td>
 								<td class="item_name">{name}</td>
 								<td class="item_provider_name">{provider_name}</td>
-								<td class="item_quantity"><input class="ui-corner-all"  name="{id}" value="0.00" size="4" id="quantity_{id}"/></td>
+								<td class="item_quantity"><input class="ui-corner-all quantity_{id}"  name="{id}" value="0.00" size="4" id="quantity_{id}"/></td>
 								<td class="item_unit">{unit}</td>
 								<td class="item_rev_tax_percent hidden">{rev_tax_percent}</td>
 								<td class="item_price">{unit_price}</td>
@@ -555,7 +656,7 @@
 					</table>
 				</div>
 			</div>
-			<div id="tabs-3">
+			<div id="tabs-4">
 				<div class="ui-widget">
                                  <label for="search"><?php echo $Text['search'];?></label>
 						<input id="search" value="" class="ui-widget-content ui-corner-all"/>
@@ -576,12 +677,12 @@
 						</tr>
 						</thead>
 						<tbody>
-							<tr id="{id}" closingdate="{time_left}">
+							<tr id="{id}" closingdate="{time_left}" stock="{stock_actual}" ordertype="{orderable_type_id}">
 								<td class="item_it">{id}</td>
 								<td class="item_info"><p class="ui-corner-all iconContainer textAlignCenter rowProductInfo" stock="{stock_actual}" iva_percent="{iva_percent}" rev_tax_percent="{rev_tax_percent}" description="{description}"><span class="ui-icon ui-icon-info"></span></p></td>
 								<td class="item_name">{name}</td>
 								<td class="item_provider_name">{provider_name}</td>
-								<td class="item_quantity"><input  class="ui-corner-all" name="{id}" value="0.00" size="4" id="quantity_{id}"/></td>
+								<td class="item_quantity"><input  class="ui-corner-all quantity_{id}" name="{id}" value="0.00" size="4" id="quantity_{id}"/></td>
 								<td class="item_unit">{unit}</td>
 								<td class="item_rev_tax_percent hidden">{rev_tax_percent}</td>
 								<td class="item_price">{unit_price}</td>
@@ -592,7 +693,7 @@
 				</div>
 
 			</div>
-			<div id="tabs-4">
+			<div id="tabs-5">
 
 				<table id="product_list_preorder" class="product_list" >
 						<thead>
@@ -613,7 +714,7 @@
 								<td class="item_info"><p class="ui-corner-all iconContainer textAlignCenter rowProductInfo" stock="{stock_actual}" iva_percent="{iva_percent}" rev_tax_percent="{rev_tax_percent}" description="{description}"><span class="ui-icon ui-icon-info"></span></p></td>
 								<td class="item_name">{name}</td>
 								<td class="item_provider_name">{provider_name}</td>
-								<td class="item_quantity"><input class="ui-corner-all" name="{id}" value="0.00" size="4" id="quantity_{id}"/></td>
+								<td class="item_quantity"><input class="ui-corner-all quantity_{id}" name="{id}" value="0.00" size="4" id="quantity_{id}"/></td>
 								<td class="item_unit">{unit}</td>
 								<td class="item_rev_tax_percent hidden">{rev_tax_percent}</td>
 								<td class="item_price">{unit_price}</td>

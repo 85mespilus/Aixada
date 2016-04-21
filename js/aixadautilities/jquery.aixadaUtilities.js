@@ -11,6 +11,10 @@ $(function(){
 				var sums = [];
 				var total = 0; 
 				var totalIva = 0; 
+				var FactIva1 = 0;
+				var FactIva2 = 0;
+				var FactIva3 = 0;
+				var FactIva0 = 0;
 				var totalRevTax = 0; 
 				var totalNet = 0; 
 				$(sel).each(function(){
@@ -22,7 +26,12 @@ $(function(){
 					total += price; 
 					totalNet += net;
 						
-					totalIva += net * (iva/100);
+					if (iva == 4) FactIva1 += net * (1 + rev/100);
+					if (iva == 10) FactIva2 += net * (1 + rev/100);
+					if (iva == 21) FactIva3 += net * (1 + rev/100);
+					if (iva == 0) FactIva0 += net * (1 + rev/100);
+						
+					totalIva += net * (1+rev/100) * (iva/100);
 					totalRevTax += net * (rev/100); 
 										
 				});
@@ -31,6 +40,10 @@ $(function(){
 				sums['totalIva'] = totalIva.toFixed(2); 
 				sums['totalRevTax'] = totalRevTax.toFixed(2); 
 				sums['total_net'] = totalNet.toFixed(2);
+				sums['Fact_Iva1'] = FactIva1.toFixed(2);
+				sums['Fact_Iva2'] = FactIva2.toFixed(2);
+				sums['Fact_Iva3'] = FactIva3.toFixed(2);
+				sums['Fact_Iva0'] = FactIva0.toFixed(2);
 				return sums; 
 			},		
 			sumSimpleItems : function (sel){
@@ -152,7 +165,7 @@ $(function(){
 		},
 		//util function to retrieve formated date from datepicker
 		getSelectedDate: function(selector, format, defaultValues){
-			formatDate = (format != null && format != '')? format:'yy-mm-dd';
+			var formatDate = (format != null && format != '')? format:'yy-mm-dd';
 			
 			var date = null; 
 
@@ -184,7 +197,16 @@ $(function(){
 	};
 	
 	$.extend({
-			updateTips: function(where, type, msg, timing ) {
+			updateTips: (function() {
+				var _clear_where,
+					_clear_style,
+					_clear_idTimeout = null,
+					_clear_func = function() {
+						_clear_idTimeout = null;
+						$(_clear_where).hide().text('')
+							.removeClass(_clear_style);
+					};
+				return function(where, type, msg, timing ) {
 					
 					var style = 'ui-state-highlight';
 					var milsecs = (timing >= 0)? timing:10000;
@@ -196,17 +218,18 @@ $(function(){
 					} else if (type == 'notice'){
 						style = 'ui-state-highlight';
 					}
-
+					if (_clear_idTimeout) {
+						clearTimeout(_clear_idTimeout);
+						_clear_func();
+					}
 					$( where )
 						.text( msg )
-						.addClass(style);
-					setTimeout(function() {
-						$(where)
-							.text('')
-							.removeClass(style);
-					}, milsecs );
-				}
-		
+						.addClass(style).show();
+					_clear_where = where;
+					_clear_style = style;
+					_clear_idTimeout = setTimeout(_clear_func, milsecs );
+				};
+			})()
 	});
 	
 	
@@ -323,7 +346,7 @@ $(function(){
 	
 	$('body').append('<div id="aixada_msg" class="msg_dialog"></div>');
 	$( "#aixada_msg" ).dialog({
-			autoOpen: false,
+			autoOpen: false
 	});
 	
 	
